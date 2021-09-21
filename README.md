@@ -1,175 +1,64 @@
-# Webpack Starter Template
-
-## Setup
-```
-npm install webpack webpack-cli --save-dev
-```
-
-## NPM Scripts
-```json
-"scripts": {
-    "build": "webpack --config webpack.prod.js",
-    "build:dev": "webpack --config webpack.config.js",
-    "dev": "webpack serve --open"
-},
-```
+# Promesas y Callbacks
 
 
-## Development Dependencies `--save-dev`
-
-| Name                                                                                   | Package                        | Production  |
-| -------------                                                                          |:-------------:                 |   -----:    |
-| [Webpack CLI](https://webpack.js.org/api/cli/)                                         |  webpack-cli                   |     --      |
-| [Dev Server](https://webpack.js.org/configuration/dev-server/)                         |  webpack-dev-server            |     --      |
-| [HTML Loader](https://webpack.js.org/loaders/html-loader/)                             |  html-loader                   |     --      |
-| [HTML Plugin](https://webpack.js.org/plugins/html-webpack-plugin/)                     |  html-webpack-plugin           |     --      |
-| [CSS Loader](https://webpack.js.org/loaders/css-loader/)                               |  css-loader                    |     --      |
-| [Mini CSS Extact Plugin](https://webpack.js.org/plugins/mini-css-extract-plugin/)      |  mini-css-extract-plugin       |     --      |
-| [Style Loader](https://webpack.js.org/loaders/style-loader/)                           |  style-loader                  |     --      |
-| [File Loader](https://v4.webpack.js.org/loaders/file-loader/)                          |  file-loader                   |     --      |
-| [Copy Plugin](https://webpack.js.org/plugins/copy-webpack-plugin/)                     |  copy-webpack-plugin           |     --      |
-| [CSS Minimizer Plugin](https://webpack.js.org/plugins/css-minimizer-webpack-plugin/)   |  css-minimizer-webpack-plugin  |     yes     |
-| [Terser Plugin](https://webpack.js.org/plugins/terser-webpack-plugin/)                 |  terser-webpack-plugin         |     yes     |
-| [Babel Loader](https://webpack.js.org/loaders/babel-loader/)                           |  babel-loader @babel/core      |     yes     |
-| [Babel Preset](https://babeljs.io/docs/en/babel-preset-env)                            |  @babel/preset-env             |     yes     |
-
-### All in One setup
-```
-npm i webpack webpack-cli html-loader html-webpack-plugin webpack-dev-server css-loader style-loader mini-css-extract-plugin file-loader copy-webpack-plugin css-minimizer-webpack-plugin terser-webpack-plugin babel-loader @babel/core @babel/preset-env --save-dev
-```
-
-## Dev Config
-
+* **Throw**: Retorna un error. `Throw 'ID no encontrado'`
+* **Throw Error()**: Retorna un error con información detallada, como el número de linea donde se ejecuto y más detalles. `Throw Error('ID no encontrado')`  
+* **Callbacks**: - Lo primero que se suele devolver en un callback, es el error, null en este caso no seria error
 ```javascript
-const HtmlWebPackPlugin    = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyPlugin           = require("copy-webpack-plugin");
+// Function
+export const buscarHeroe = (id, callback) => {
 
-module.exports = {
-
-    mode: 'development',
-    output:{
-        clean: true
-    },
-    module: {
-        rules: [
-            {
-                test: /\.html$/i,
-                loader: 'html-loader',
-                options: {
-                    minimize: false,
-                    sources: false,
-                }
-            },
-            {
-                test: /\.css$/i,
-                exclude: /styles.css$/,
-                use: [ 'style-loader', 'css-loader' ]
-            },
-            {
-                test: /styles.css$/,
-                use: [ MiniCssExtractPlugin.loader, 'css-loader' ]
-            },
-            {
-                test: /\.(png|jpe?g|gif)$/i,
-                use: [ { loader: 'file-loader' } ]
-            }
-        ]
-    },
-    plugins: [
-        new HtmlWebPackPlugin({
-            template: './src/index.html',
-            filename: './index.html',
-            // inject: 'body'
-        }),
-        new MiniCssExtractPlugin({
-            filename: '[name].css',
-            ignoreOrder: false
-        }),
-        new CopyPlugin({
-            patterns: [
-                { from: 'src/assets/', to: 'assets/' }
-            ]
-        })
-    ]
-
+    if (heroe) {
+        callback(null, heroe);
+    } else {
+        callback('Error');
+    }
 }
-```
 
-## Prod Config
+// Callback Caller
+buscarHeroe( heroeId1, (err, heroe1) => {
+    if (err) { 
+        console.error(err); 
+    } else {
+        console.info(heroe1)
+    }
+});
+```
+* Callback Hell és la indentación repetida de Callbacks dentro de Callbacks, haciéndolo dificultoso de leer y mantener
+* **Promesas**: Todas las funciones que resuelvan promesas deben de ser "llamadas" usando el `then`. 
+* **new Promise()**: Creación de promesas con `new Promise()` - Los argumentos que reciba una promesa, son el resolve (**res**) y el reject (**rej**): 
 ```javascript
-const HtmlWebPackPlugin    = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CopyPlugin           = require("copy-webpack-plugin");
-
-const CssMinimizer = require('css-minimizer-webpack-plugin');
-const Terser = require('terser-webpack-plugin');
-
-module.exports = {
-
-    mode: 'production',
-    output:{
-        clean: true,
-        filename: '[name].[contenthash].js'
-    },
-    module: {
-        rules: [
-            {
-                test: /\.html$/i,
-                loader: 'html-loader',
-                options: {
-                    minimize: false,
-                    sources: false,
-                }
-            },
-            {
-                test: /\.css$/i,
-                exclude: /styles.css$/,
-                use: [ 'style-loader', 'css-loader' ]
-            },
-            {
-                test: /styles.css$/,
-                use: [ MiniCssExtractPlugin.loader, 'css-loader' ]
-            },
-            {
-                test: /\.(png|jpe?g|gif)$/i,
-                use: [ { loader: 'file-loader' } ]
-            },
-            {
-                test: /\.m?js$/,
-                exclude: /node_modules/,
-                use: {
-                  loader: "babel-loader",
-                  options: {
-                    presets: ['@babel/preset-env']
-                  }
-                }
-              }
-        ]
-    },
-    optimization: {
-        minimize: true,
-        minimizer: [
-            new CssMinimizer(),
-            new Terser(),
-        ]
-    },
-    plugins: [
-        new HtmlWebPackPlugin({
-            template: './src/index.html',
-            filename: './index.html',
-            // inject: 'body'
-        }),
-        new MiniCssExtractPlugin({
-            filename: '[name].[fullhash].css',
-            ignoreOrder: false
-        }),
-        new CopyPlugin({
-            patterns: [
-                { from: 'src/assets/', to: 'assets/' }
-            ]
-        })
-    ]
-
-}
+return new Promise((resolve, reject) => {
+    if (heroe) {
+        resolve(heroe);
+    } else {
+        reject(`No existe un héroe con el id ${id}`);
+    }
+});
 ```
+* **Promise.all**: Un método que espera que todas las promesas hayan sido resueltas para continuar con el flujo del programa. `Promise.all()` debe de recibir un array de promesas para ejecutarlas y para acceder a lo que resuelven dichas promesas, se pueden acceder como [0],[1].. dependiendo de la posición que se estan mandando como argumentos. **Desestructuración:** se puede desestructurar el `then` entre brackets `[ ]`
+```javascript
+Promise.all([buscarHeroePromise(heroeId1), buscarHeroePromise(heroeId2)])
+       .then(([heroe1, heroe2]) => {
+            console.log(`Enviando a ${heroe1.nombre} y ${heroe2.nombre}`)
+        })
+```
+* **Promise.race**: Resuelve la promesa más rapida e ignora el resto, aunque estas dieran error. Recibe como argumento un array de promesas.
+* **Catch**: Nos permite atrapar el error después del `then`
+* **Finally**: Es la instrucción que se ejecuta despues del `then` y/o `catch`. Se ejecuta al final de las promesas.
+* **Async**: Las funciones **async** son **Asíncronas**. Nos evitan el uso de `new Promise()` ya que al marcar una función como async, se puede efectuar un `return` normal y corriente que devolverá una promesa por defecto.
+* **Await**: El uso de **await** permite esperar al flujo de esa función asíncrona, hasta que la instrucción/promesa con el **await** no se haya resuelto, la función no continuará. Solo disponible dentro de funciones marcadas como **async**. Ejemplos de uso:
+```javascript
+return await Promise...
+
+const heroe = await buscarHeroeAsync(id)
+
+for await(const heroe of heroesPromesas)
+
+heroesPromesas.forEach( async(promise) => console.log(await promise)) **
+
+if ((await buscarHeroe(id)).length === 0) { return }
+```
+** En esta instrucción el await no funcionaria como se espera, la ejecución del programa seguiria y no se esperaria a que el await resuelva la promesa.
+* **If await**: Se puede usar await dentro de un If. `if (await promise) ...`
+* **For await**: Dentro de un ciclo for seria `for await (...)`
